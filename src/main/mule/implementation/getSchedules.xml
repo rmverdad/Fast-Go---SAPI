@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="getSchedulesSub_Flow" doc:id="ee055228-ef15-4368-982a-bb5d45bd7d09" >
+		<flow-ref doc:name="get variables" doc:id="ece87fcc-7244-4927-9160-9c027ae29dd6" name="setVars"/>
+		<logger level="INFO" doc:name="Logger" doc:id="93636b7f-6589-400d-8813-ae516ef04170" />
+		<http:request method="GET" doc:name="Request Schedules" doc:id="7c4162a6-e551-41c8-a9af-ebf8aa8c0b55" config-ref="HTTP_Request_configuration" path="${http.requester.path.schedules}"/>
+		<ee:transform doc:name="Transform Message" doc:id="ef69a744-a390-4a5f-944a-9519753e6954" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	departureDateTime: payload01.departureDate,
+	fromLocation: payload01.originLocationCode,
+	toLocation: payload01.destinationLocationCode,
+	availableSeats: payload01.availableSeats
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>
