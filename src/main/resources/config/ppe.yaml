@@ -6,8 +6,8 @@ http:
     host: "localhost"
     port: "9081"
     path:  
-      routes: "/travelontip/routes"
-      schedules: "/travelontip/schedules"
+      routes: "/fastgo/routes"
+      schedules: "/fastgo/schedules"
     
 sql:
   host: "sql12.freesqldatabase.com"
