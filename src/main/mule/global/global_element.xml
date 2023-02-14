@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 	<configuration-properties doc:name="Configuration properties" doc:id="59bb9cda-1a17-4319-8d5d-e5596a1941e9" file="config/${MULE_ENV}.yaml" />
-	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="cbc0eacb-f036-4e7f-a884-6f0d0ce2b9db" >
-		<http:listener-connection host="localhost" port="${http.listener.port}" />
-	</http:listener-config>
+	 <http:listener-config name="retrieveconsolidatedroutesandschedule-fastgo-sapi-httpListenerConfig">
+        <http:listener-connection host="${http.listener.host}" port="${http.listener.port}" />
+    </http:listener-config>
+    <apikit:config name="retrieveconsolidatedroutesandschedule-fastgo-sapi-config" api="retrieveconsolidatedroutesandschedule-fastgo-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
 	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="db6bcbe6-c7b6-4858-ba2c-77792fa5d832" >
 		<http:request-connection host="${http.requester.host}" port="${http.requester.port}" />
 	</http:request-config>
