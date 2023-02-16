@@ -1,4 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
   <types:catalog/>
+  <types:enrichment select="#10330ef6-27da-4ed3-ab01-6c7a230d632c"/>
+  <types:enrichment select="#19650dd0-2691-44eb-8bad-f8bc25c1c924"/>
 </types:mule>

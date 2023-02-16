@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<configuration-properties doc:name="Configuration properties" doc:id="59bb9cda-1a17-4319-8d5d-e5596a1941e9" file="config/${MULE_ENV}.yaml" />
 	 <http:listener-config name="retrieveconsolidatedroutesandschedule-fastgo-sapi-httpListenerConfig">
         <http:listener-connection host="${http.listener.host}" port="${http.listener.port}" />
@@ -16,8 +17,22 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	</http:request-config>
 	<configuration doc:name="Configuration" doc:id="909b687e-27b4-481b-b89b-24451779ece7" defaultErrorHandler-ref="global_error_handlerError_Handler" />
 	<sub-flow name="setVars" doc:id="70868e1f-0d0f-4500-ba5d-037b314d051d" >
-		<set-variable value="#[message.attributes.headers.transactionId]" doc:name="transactionId" doc:id="74ccabe3-a3e1-41b4-bdcf-1a962dfcb036" variableName="transactionId"/>
-		<set-variable value="#[message.attributes.uriParams.transportType]" doc:name="transportType" doc:id="c28e24a8-ab91-4019-909e-b858ca0a523e" variableName="transportType"/>
-		<set-variable value="#[message.attributes.uriParams.transportCompany]" doc:name="transportCompany" doc:id="e0de9361-7bda-4acf-a32c-a95fc224f2ef" variableName="transportCompany"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="6d3fe833-cb36-4728-8618-f9aff7e4f656" >
+			<route >
+				<set-variable value="#[message.attributes.queryParams.destinationLocationCode]" doc:name="destination location" doc:id="71a16229-c140-4ab9-ab5a-60edb9251eff" variableName="destLoc" />
+			</route>
+			<route >
+				<set-variable value="#[message.attributes.queryParams.departureLocationCode]" doc:name="origin location" doc:id="7d7a27c0-6963-49b5-afb9-6899ba569b4e" variableName="orgLoc" />
+			</route>
+			<route >
+				<set-variable value="#[attributes.headers.transactionId]" doc:name="transactionId" doc:id="74ccabe3-a3e1-41b4-bdcf-1a962dfcb036" variableName="transactionId" />
+			</route>
+			<route >
+				<set-variable value="#[message.attributes.uriParams.transportType]" doc:name="transportType" doc:id="c28e24a8-ab91-4019-909e-b858ca0a523e" variableName="transportType" />
+			</route>
+			<route >
+				<set-variable value="#[message.attributes.uriParams.transportCompany]" doc:name="transportCompany" doc:id="e0de9361-7bda-4acf-a32c-a95fc224f2ef" variableName="transportCompany" />
+			</route>
+		</scatter-gather>
 	</sub-flow>
 </mule>

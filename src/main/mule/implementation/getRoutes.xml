@@ -1,24 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<sub-flow name="getRoutesSub_Flow" doc:id="dc47edbb-a20e-470f-b338-e8370edf228a" >
-		<flow-ref doc:name="get vars" doc:id="54a1698e-d17b-44c5-9f51-d257832c0d2a" name="setVars"/>
-		<logger level="INFO" doc:name="Logger" doc:id="6c42c7ab-c684-4603-8461-84e0176092a0" />
-		<http:request method="GET" doc:name="Request Routes" doc:id="ccd594b7-46e8-4ce3-86b1-e07c17e1d910" config-ref="HTTP_Request_configuration" path="${http.requester.path.routes}"/>
-		<ee:transform doc:name="Transform Message" doc:id="2fe62094-639b-4680-8c34-1a3b2b32bdc6" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="requestRoutes" doc:id="55c175c2-7227-45f1-9604-64b0f906abf6" >
+		<http:request method="GET" doc:name="Request Routes" doc:id="ccd594b7-46e8-4ce3-86b1-e07c17e1d910" config-ref="HTTP_Request_configuration" path="${http.requester.path.routes}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	transactionId : vars.transactionId
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"Key" : "Value"
+}]]]></http:uri-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="cc72d1b4-20a9-46b4-95d4-d5028377da2e" />
+		<choice doc:name="Choice" doc:id="f046cea0-ca9d-4a6c-98a4-e410dd627ce4">
+			<when expression='#[vars.transportType != "all"]'>
+				<ee:transform doc:name="get routes by transportType" doc:id="2fe62094-639b-4680-8c34-1a3b2b32bdc6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var newTransportType = upper(vars.transportType)
+var new_payload = payload filter((value,index)->upper(value.transportType)== upper(newTransportType))
+---
+new_payload map ((item, index) -> {
+		departureLocationCode: item.originLocationCode,
+		arrivalLocationCode: item.destinationLocationCode,
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="get all routes" doc:id="ffb7140e-e0dc-4c62-8442-5a432fe8bbd7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload map ((item, index) -> {
 		departureLocationCode: item.originLocationCode,
 		arrivalLocationCode: item.destinationLocationCode,
 })]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="dc5add5d-e10d-448a-a5d5-5b477c0753b0" message="Filter by Transport Type Success"/>
+	</sub-flow>
+	<sub-flow name="getRoutesSub_Flow" doc:id="dc47edbb-a20e-470f-b338-e8370edf228a" >
+		<flow-ref doc:name="get vars" doc:id="54a1698e-d17b-44c5-9f51-d257832c0d2a" name="setVars"/>
+		<flow-ref doc:name="request flow" doc:id="9aaea63e-5de7-4ed3-b47c-c4f1eb97b209" name="requestRoutes" />
+		<flow-ref doc:name="filterByLocation" doc:id="78c383ef-70bf-47ad-a28f-7eb30238e147" name="locationFilterFlow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6c42c7ab-c684-4603-8461-84e0176092a0" message="Response for Fast GO Routes with Transaction ID: vars.transcationId"/>
 	</sub-flow>
 </mule>

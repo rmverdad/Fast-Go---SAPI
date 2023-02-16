@@ -5,13 +5,31 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<sub-flow name="getSchedulesSub_Flow" doc:id="ee055228-ef15-4368-982a-bb5d45bd7d09" >
-		<flow-ref doc:name="get variables" doc:id="ece87fcc-7244-4927-9160-9c027ae29dd6" name="setVars"/>
-		<logger level="INFO" doc:name="Logger" doc:id="93636b7f-6589-400d-8813-ae516ef04170" />
-		<http:request method="GET" doc:name="Request Schedules" doc:id="7c4162a6-e551-41c8-a9af-ebf8aa8c0b55" config-ref="HTTP_Request_configuration" path="${http.requester.path.schedules}"/>
-		<ee:transform doc:name="Transform Message" doc:id="ef69a744-a390-4a5f-944a-9519753e6954" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+	<sub-flow name="requestSchedules" doc:id="1aaf3693-4f53-4eb6-8bb7-25dbcba5fed1" >
+		<http:request method="GET" doc:name="Request Schedules" doc:id="7c4162a6-e551-41c8-a9af-ebf8aa8c0b55" config-ref="HTTP_Request_configuration" path="${http.requester.path.schedules}" />
+		<logger level="INFO" doc:name="Logger" doc:id="fc8e04d3-2875-4edf-b18d-d6a7a259a9bf" message="Request success for Schedules" />
+		<choice doc:name="Choice" doc:id="75c069f7-c0d6-4843-9efd-46491c5d79f7">
+			<when expression='#[vars.transportType != "all" and vars.transportType != "All"]'>
+				<ee:transform doc:name="Transform Message" doc:id="7f017d92-f53f-41c5-ab20-67e13cb584a0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var newTransportType = upper(vars.transportType)
+var new_payload = payload filter((value,index)->upper(value.transportType)== upper(newTransportType))
+---
+new_payload map ( payload01 , indexOfPayload01 ) -> {
+	departureDateTime: payload01.departureDate,
+	fromLocation: payload01.originLocationCode,
+	toLocation: payload01.destinationLocationCode,
+	availableSeats: payload01.availableSeats
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="ef69a744-a390-4a5f-944a-9519753e6954">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload map ( payload01 , indexOfPayload01 ) -> {
@@ -22,5 +40,66 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="6fef9407-94f4-43d6-8cce-1e5ac51d2f00" message="Transforming payload success" />
+	</sub-flow>
+	<sub-flow name="getSchedulesSub_Flow" doc:id="ee055228-ef15-4368-982a-bb5d45bd7d09" >
+		<flow-ref doc:name="get variables" doc:id="ece87fcc-7244-4927-9160-9c027ae29dd6" name="setVars"/>
+		<logger level="INFO" doc:name="Logger" doc:id="93636b7f-6589-400d-8813-ae516ef04170" message="setting variable success"/>
+		<flow-ref doc:name="request schedules" doc:id="071774d3-ae66-4ef1-bcc8-ec67d0dfc8fc" name="requestSchedules" />
+		<flow-ref doc:name="filter by location" doc:id="44f2e65b-2026-46b4-8697-ef86a98afe29" name="locationFilterFlow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6bbb084d-4a2d-40ed-8f46-443db879d16b" />
+	</sub-flow>
+	<sub-flow name="locationFilterFlow" doc:id="0c6ebe4f-f63d-461b-8e7d-dd6227362d64" >
+		<choice doc:name="Choice" doc:id="6cd4c4f3-fc8c-48cc-8d82-f9aa9ebbbe67" >
+			<when expression="#[!(isEmpty(vars.destLoc)) and !(isEmpty(vars.orgLoc))]" >
+				<ee:transform doc:name="filter by both origin and destination location" doc:id="fb00bd9b-29d8-41cf-9208-2168c5bd788a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var origin = upper(vars.orgLoc)
+var destination = upper(vars.destLoc)
+var filterByOrigin = payload filter ((item,index)-> item.fromLocation == origin)
+var finalFilter = filterByOrigin filter ((item,index)->item.toLocation == destination)
+---
+finalFilter]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[!(isEmpty(vars.destLoc)) and isEmpty(vars.orgLoc)]" >
+				<ee:transform doc:name="filter by destination" doc:id="5c55cb10-49ec-40c4-a56a-24c9d887b678" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var filterByDestination = payload filter ((item,index)->item.toLocation == vars.destLoc)
+---
+filterByDestination]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[isEmpty(vars.destLoc) and !(isEmpty(vars.orgLoc))]" >
+				<ee:transform doc:name="filter by origin" doc:id="8901317c-9626-4d6a-a4f2-8cc1d8472a44" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var filterByOrigin = payload filter ((item,index)-> item.fromLocation == vars.originLoc)
+---
+filterByOrigin]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="no filter" doc:id="78e0dd22-aba3-47e3-a606-3c9a1da6594b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="8e28f9f1-164f-414f-886e-533d9f23ccdb" message="Filter By Location Success" />
 	</sub-flow>
 </mule>
