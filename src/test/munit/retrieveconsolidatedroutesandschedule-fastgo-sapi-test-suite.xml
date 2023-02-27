@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="retrieveconsolidatedroutesandschedule-fastgo-sapi-test-suite.xml" />
+	<munit:test name="get-all-routes-test" doc:id="907713ef-aae2-4aac-a351-6621ac452f95" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="http request" doc:id="b490588e-0470-48a6-adf4-02c45bcdaf80" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ccd594b7-46e8-4ce3-86b1-e07c17e1d910" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[&#10;  {&#10;    "transportType": "Bus",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "PSG",&#10;    "originLocationCode": "MNL"&#10;  },&#10;  {&#10;    "transportType": "Bus",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "QC",&#10;    "originLocationCode": "MNL"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "KLG-MY",&#10;    "originLocationCode": "BEN-SG"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "BE-SG",&#10;    "originLocationCode": "KLG-MY"&#10;  },&#10;  {&#10;    "transportType": "Van",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "QC",&#10;    "originLocationCode": "PSG"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "BE-SG",&#10;    "originLocationCode": "KLG-MY"&#10;  }&#10;]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="transport filter" doc:id="0119eafb-db2f-4400-b059-60a0f7f749fe" processor="choice">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="f046cea0-ca9d-4a6c-98a4-e410dd627ce4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call>
+					<munit-tools:assert-that doc:name="Assert that" doc:id="edd55f5f-64c2-4899-8760-713afc66562a" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert expression" doc:id="8e26fa0b-3637-45ca-824b-caf71db9dedc" >
+						<munit-tools:that ><![CDATA[#[import * from sample_data::sample_payload
+ ---
+sample_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="88d7fc86-c2bb-4d97-a202-95708dbbd693" >
+				<munit:attributes value='#[{"uriParams":{"transportType": "all","transportCompany": "fastGo"},&#10;	"headers":{&#10;		"transactionId": "aabccde"&#10;	}&#10;}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\(transportType)\(transportCompany)\routes:retrieveconsolidatedroutesandschedule-fastgo-sapi-config" doc:id="b176b4c2-053a-4ffb-9503-07263f540b73" name="get:\(transportType)\(transportCompany)\routes:retrieveconsolidatedroutesandschedule-fastgo-sapi-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="f35ce41f-5114-4e9a-999a-64deaf5909fe" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cc72d1b4-20a9-46b4-95d4-d5028377da2e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="ed148000-6673-4ff5-93e8-eb4aa7b2252e" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="dc5add5d-e10d-448a-a5d5-5b477c0753b0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-flights-routes-test" doc:id="be40018b-f5ae-4af2-bcc9-bae726840075" description="Test" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="http request" doc:id="3f5a40df-857d-4365-b9b0-f89ab383c44a" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ccd594b7-46e8-4ce3-86b1-e07c17e1d910" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[&#10;  {&#10;    "transportType": "Bus",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "PSG",&#10;    "originLocationCode": "MNL"&#10;  },&#10;  {&#10;    "transportType": "Bus",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "QC",&#10;    "originLocationCode": "MNL"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "KLG-MY",&#10;    "originLocationCode": "BEN-SG"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "BE-SG",&#10;    "originLocationCode": "KLG-MY"&#10;  },&#10;  {&#10;    "transportType": "Van",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "QC",&#10;    "originLocationCode": "PSG"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "BE-SG",&#10;    "originLocationCode": "KLG-MY"&#10;  }&#10;]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="transport filter" doc:id="c5d65e9b-b20d-4833-ba68-85f22e7eaf6d" processor="choice" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="f046cea0-ca9d-4a6c-98a4-e410dd627ce4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-that doc:name="Assert that" doc:id="96abe528-16d5-47d9-bfee-cdc00e90945d" expression="#[payload]" is="#[MunitTools::notNullValue()]" />
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert expression" doc:id="57c95985-ced2-44bd-9828-773a56534fe3" >
+						<munit-tools:that ><![CDATA[#[import * from sample_data::sample_payload2
+ ---
+sample_payload2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="79955932-0a96-422b-a293-640d5f4d3d9a" >
+				<munit:attributes value='#[{"uriParams":{"transportType": "flights","transportCompany": "fastGo"},&#10;	"headers":{&#10;		"transactionId": "aabccde"&#10;	}&#10;}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\(transportType)\(transportCompany)\routes:retrieveconsolidatedroutesandschedule-fastgo-sapi-config" doc:id="6e990e25-dff2-4437-bf0d-2c34bde7b067" name="get:\(transportType)\(transportCompany)\routes:retrieveconsolidatedroutesandschedule-fastgo-sapi-config" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="0d83f728-553f-486f-ac6a-816c8c06659e" processor="logger" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cc72d1b4-20a9-46b4-95d4-d5028377da2e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call1" doc:id="5f409a25-0bf8-4f97-93b6-8448a3965db0" processor="logger" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="dc5add5d-e10d-448a-a5d5-5b477c0753b0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-flights-routes-test1" doc:id="5a27ccc6-5dda-4a4f-95e0-d56076cdb66a" description="Test" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="http request" doc:id="3189fd99-2322-4c44-90f9-7b60e5f95d5f" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ccd594b7-46e8-4ce3-86b1-e07c17e1d910" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[&#10;  {&#10;    "transportType": "Bus",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "PSG",&#10;    "originLocationCode": "MNL"&#10;  },&#10;  {&#10;    "transportType": "Bus",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "QC",&#10;    "originLocationCode": "MNL"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "KLG-MY",&#10;    "originLocationCode": "BEN-SG"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "BE-SG",&#10;    "originLocationCode": "KLG-MY"&#10;  },&#10;  {&#10;    "transportType": "Van",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "QC",&#10;    "originLocationCode": "PSG"&#10;  },&#10;  {&#10;    "transportType": "Flights",&#10;    "companyName": "FastGo",&#10;    "destinationLocationCode": "BE-SG",&#10;    "originLocationCode": "KLG-MY"&#10;  }&#10;]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="transport filter" doc:id="d061cdde-96cf-487e-90ad-86548b5bad07" processor="choice" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="f046cea0-ca9d-4a6c-98a4-e410dd627ce4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-that doc:name="Assert that" doc:id="ef2de5f0-de06-4fd5-ac25-c661e79acce7" expression="#[payload]" is="#[MunitTools::notNullValue()]" />
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert expression" doc:id="3e4160cf-223d-4ace-8a1d-ee595a906510" >
+						<munit-tools:that ><![CDATA[#["Invalid Transport Type"]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="08bd569f-6c2b-4915-97fb-a09b4817c8ae" >
+				<munit:attributes value='#[{"uriParams":{"transportType": "xayz","transportCompany": "fastGo"},&#10;	"headers":{&#10;		"transactionId": "aabccde"&#10;	}&#10;}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\(transportType)\(transportCompany)\routes:retrieveconsolidatedroutesandschedule-fastgo-sapi-config" doc:id="465b4f16-c538-40fe-991e-cf44a15ecd0b" name="get:\(transportType)\(transportCompany)\routes:retrieveconsolidatedroutesandschedule-fastgo-sapi-config" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="6a3029c8-3891-42fa-89b8-3ba68f59e077" processor="logger" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cc72d1b4-20a9-46b4-95d4-d5028377da2e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call1" doc:id="f8e06a80-619f-4996-a8a6-59e488d4c808" processor="logger" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="dc5add5d-e10d-448a-a5d5-5b477c0753b0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
